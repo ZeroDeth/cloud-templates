@@ -83,7 +83,7 @@
           ];
 
           shellHook = ''
-            figlet "DigitalOcean DEV!" | lolcat --freq 0.5
+            figlet "DOC DEV!" | lolcat --freq 0.5
             echo "Go `${pkgs.go}/bin/go version`"
             echo "Digital Ocean `${pkgs.doctl}/bin/doctl version`"
             echo "Terraform `${pkgs.terraform}/bin/terraform version`"
