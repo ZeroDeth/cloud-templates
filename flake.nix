@@ -60,7 +60,7 @@
             --experimental-features 'nix-command flakes' \
             flake init \
             --template \
-            "github:zerodeth/dev-templates#''${TEMPLATE}"
+            "github:zerodeth/cloud-templates#''${TEMPLATE}"
         '';
 
         update = writeScriptBin "update" ''
