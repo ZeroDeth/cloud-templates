@@ -1,83 +1,89 @@
 {
-  description = "Real world DevOps with Nix";
+  description =
+    "Ready-made templates for easily creating flake-driven cloud environments";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs =
-    { self
-    , nixpkgs
-    , flake-utils
-    }:
+  outputs = { self, flake-utils, nixpkgs }:
+    {
+      templates = rec {
+        aws = {
+          path = ./aws;
+          description = "Amazon Web Services development environment";
+        };
 
-    let
-      name = "todos";
-      goVersion = 19;
-      # An overlay to set the Go version
-      goOverlay = self: super: {
-        go = super."go_1_${toString goVersion}";
+        azure = {
+          path = ./azure;
+          description = "Microsoft Azure development environment";
+        };
+
+        gcp = {
+          path = ./gcp;
+          description = "Google Cloud development environment";
+        };
+
+        digitalocean = {
+          path = ./digitalocean;
+          description = "Digital Ocean development environment";
+        };
+
+        linode = {
+          path = ./linode;
+          description = "Linode development environment";
+        };
+
+        # Aliases
+        # rt = rust-toolchain;
       };
-      overlays = [ goOverlay ];
-    in
-    # The package and Docker image are only intended to be built on amd64 Linux
-    flake-utils.lib.eachSystem [ "x86_64-linux" ]
-      (system:
+    } // flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit overlays system; };
+        pkgs = import nixpkgs { inherit system; };
+        inherit (pkgs) mkShell writeScriptBin;
+        exec = pkg: "${pkgs.${pkg}}/bin/${pkg}";
+
+        format = writeScriptBin "format" ''
+          ${exec "nixpkgs-fmt"} **/*.nix
+        '';
+
+        dvt = writeScriptBin "dvt" ''
+          if [ -z $1 ]; then
+            echo "no template specified"
+            exit 1
+          fi
+
+          TEMPLATE=$1
+
+          ${exec "nix"} \
+            --experimental-features 'nix-command flakes' \
+            flake init \
+            --template \
+            "github:zerodeth/dev-templates#''${TEMPLATE}"
+        '';
+
+        update = writeScriptBin "update" ''
+          for dir in `ls -d */`; do # Iterate through all the templates
+            (
+              cd $dir
+              ${exec "nix"} flake update # Update flake.lock
+              ${exec "direnv"} reload    # Make sure things work after the update
+            )
+          done
+        '';
       in
       {
-        packages = rec {
-          default = todos;
-
-          todos = pkgs.buildGoModule {
-            name = "todos";
-            src = ./.;
-            subPackages = [ "cmd/todos" ];
-            vendorSha256 = "sha256-fwJTg/HqDAI12mF1u/BlnG52yaAlaIMzsILDDZuETrI=";
+        devShells = {
+          default = mkShell {
+            packages = [ format update ];
           };
-
-          docker =
-            # A layered image means better caching and less bandwidth
-            pkgs.dockerTools.buildLayeredImage {
-              name = "lucperkins/todos";
-              config = {
-                Cmd = [ "${self.packages.${system}.todos}/bin/todos" ];
-                ExposedPorts."8080/tcp" = { };
-              };
-              maxLayers = 120;
-            };
         };
-      }) //
-    # The shell environment is intended for all systems
-    flake-utils.lib.eachDefaultSystem (system:
-    let
-      pkgs = import nixpkgs {
-        inherit overlays system;
-      };
-    in
-    {
-      devShells.default = pkgs.mkShell {
-        buildInputs = with pkgs;
-          [
-            # Platform-non-specific Go (for local development)
-            go
 
-            # Docker CLI
-            docker
+        packages = rec {
+          default = dvt;
 
-            # Kubernetes
-            kubectl
-            kubectx
-
-            # Terraform
-            terraform
-            tflint
-
-            # Digital Ocean
-            doctl
-          ];
-      };
-    });
+          inherit dvt;
+        };
+      });
 }
