@@ -1,8 +1,8 @@
 {
-  description = "Real world DevOps with Nix";
+  description = "Digital Ocean DevOps with Nix";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/release-22.11";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -61,6 +61,9 @@
       devShells.default = pkgs.mkShell {
         buildInputs = with pkgs;
           [
+            figlet              # Output text as big ASCII art text
+            lolcat              # Make console output raibow colored
+
             # Platform-non-specific Go (for local development)
             go
 
@@ -78,6 +81,14 @@
             # Digital Ocean
             doctl
           ];
+
+          shellHook = ''
+            figlet "DigitalOcean DEV!" | lolcat --freq 0.5
+            echo "Go `${pkgs.go}/bin/go version`"
+            echo "Digital Ocean `${pkgs.doctl}/bin/doctl version`"
+            echo "Terraform `${pkgs.terraform}/bin/terraform version`"
+            echo "Kubernetes `${pkgs.kubectl}/bin/kubectl version --short`"
+          '';
       };
     });
 }
