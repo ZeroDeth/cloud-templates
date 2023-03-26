@@ -79,6 +79,7 @@
             tflint
 
             # Google Cloud
+            # Ref: https://github.com/michielboekhoff/nixos-conf/blob/37d2a6f7b4d5c266346b270f5da5db82613eb945/hosts/kyoshi/default.nix#L19
             (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin google-cloud-sdk.components.cloud-build-local])
           ];
 
@@ -87,6 +88,7 @@
             echo "Go `${pkgs.go}/bin/go version`"
             echo "Google Cloud `${pkgs.google-cloud-sdk}/bin/gcloud version`"
             echo "Terraform `${pkgs.terraform}/bin/terraform version`"
+            echo "Docker `${pkgs.docker}/bin/docker --version`"
             echo "Kubernetes `${pkgs.kubectl}/bin/kubectl version --short`"
           '';
       };
