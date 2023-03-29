@@ -64,21 +64,40 @@
             figlet              # Output text as big ASCII art text
             lolcat              # Make console output raibow colored
 
-            # Platform-non-specific Go (for local development)
+            ## Platform-non-specific Go (for local development)
             go
 
-            # Docker CLI
+            ## Docker CLI
             docker
 
-            # Kubernetes
+            ## Kubernetes
             kubectl
             kubectx
+            # kustomize
+            # kubernetes-helm
 
-            # Terraform
+            ## cluster management tool
+            # k9s
+            # lens
+            krew
+            kubecolor            #TODO: nixos-unstable has this, update channel to use it.
+
+            ## Terraform
             terraform
             tflint
+            terraform-docs              #0.16.0
+            tfsec
+            terrascan
+            infracost                   #0.9.22
+            terraformer
+            graphviz
+            gawk
 
-            # Google Cloud
+            ## Code tools
+            pre-commit
+            checkov
+
+            ## Google Cloud
             # Ref: https://github.com/michielboekhoff/nixos-conf/blob/37d2a6f7b4d5c266346b270f5da5db82613eb945/hosts/kyoshi/default.nix#L19
             (google-cloud-sdk.withExtraComponents [google-cloud-sdk.components.gke-gcloud-auth-plugin google-cloud-sdk.components.cloud-build-local])
           ];
